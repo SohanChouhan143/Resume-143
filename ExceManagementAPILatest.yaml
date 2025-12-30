@@ -1,0 +1,383 @@
+openapi: 3.0.3
+info:
+  title: Exception Management API
+  description: APIs for Authentication, User Management, and Exception Management
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+
+tags:
+  - name: Authentication
+  - name: User
+  - name: Exception
+
+paths:
+
+  /exceptionmanagement/api/user/AddUser:
+    post:
+      tags: [User]
+      summary: Register new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        201:
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        409:
+          $ref: '#/components/responses/Conflict'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+
+  /exceptionmanagement/api/user/ForgotPassword:
+    post:
+      tags: [User]
+      summary: Forgot password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPasswordRequest'
+      responses:
+        200:
+          description: Reset email sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+
+  /exceptionmanagement/api/user/login:
+    post:
+      tags: [Authentication]
+      summary: User login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        200:
+          description: Login success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserAuthResponse'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+
+  /exceptionmanagement/api/user/refresh:
+    post:
+      tags: [Authentication]
+      summary: Refresh JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        200:
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserAuthResponse'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+
+  /exceptionmanagement/api/user/ResetPassword:
+    post:
+      tags: [User]
+      summary: Reset password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetRequest'
+      responses:
+        200:
+          description: Password reset successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+
+  /exceptionmanagement/api/user/GetUsers:
+    get:
+      tags: [User]
+      summary: Get all users
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        200:
+          description: Users fetched
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserDTO'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+
+  /exceptionmanagement/api/user/UpdateUser:
+    patch:
+      tags: [User]
+      summary: Update user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        200:
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+
+  /exceptionmanagement/api/AddException:
+    post:
+      tags: [Exception]
+      summary: Add exception
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExceptionDetail'
+      responses:
+        201:
+          description: Exception created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExceptionResponse'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+
+  /exceptionmanagement/api/GetException:
+    get:
+      tags: [Exception]
+      summary: Get exceptions with pagination
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, default: 0 }
+        - name: size
+          in: query
+          schema: { type: integer, default: 10 }
+      responses:
+        200:
+          description: Exception list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageResponse'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+
+  /exceptionmanagement/api/GetException/{id}:
+    get:
+      tags: [Exception]
+      summary: Get exception by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        200:
+          description: Exception found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExceptionDetail'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+
+    SuccessResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+        error:
+          type: string
+        message:
+          type: string
+        path:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username: { type: string }
+        password: { type: string }
+
+    RegisterRequest:
+      type: object
+      properties:
+        username: { type: string }
+        email: { type: string }
+        password: { type: string }
+        roleId: { type: integer }
+
+    ForgotPasswordRequest:
+      type: object
+      properties:
+        email: { type: string }
+
+    RefreshRequest:
+      type: object
+      properties:
+        refreshToken: { type: string }
+
+    ResetRequest:
+      type: object
+      properties:
+        userId: { type: integer }
+        password: { type: string }
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        userId: { type: integer }
+        status: { type: string }
+        roleId: { type: integer }
+
+    UserAuthResponse:
+      type: object
+      properties:
+        accessToken: { type: string }
+        refreshToken: { type: string }
+        userId: { type: integer }
+        role: { type: integer }
+        defaultPassword: { type: boolean }
+
+    UserDTO:
+      type: object
+      properties:
+        id: { type: integer }
+        username: { type: string }
+        email: { type: string }
+        status: { type: string }
+
+    ExceptionDetail:
+      type: object
+      properties:
+        exceptionId: { type: integer }
+        requestId: { type: integer }
+        exceptionType: { type: string }
+        systemName: { type: string }
+        errorCode: { type: string }
+        timeStamp: { type: string, format: date-time }
+        endPoint: { type: string }
+        methodName: { type: string }
+        statusCode: { type: string }
+        requestJson: { type: string }
+        responseJson: { type: string }
+        isSubmitted: { type: boolean }
+
+    ExceptionResponse:
+      type: object
+      properties:
+        exceptionId: { type: integer }
+
+    PageResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items: { type: object }
+        totalElements: { type: integer }
+        totalPages: { type: integer }
+        page: { type: integer }
+        size: { type: integer }
+
+  responses:
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+    NotFound:
+      description: Resource Not Found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+    Conflict:
+      description: Conflict
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+    InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
